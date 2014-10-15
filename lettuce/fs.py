@@ -28,7 +28,7 @@ from os.path import abspath, join, dirname, curdir, exists
 
 
 class FeatureLoader(object):
-    """Loader class responsible for findind features and step
+    """Loader class responsible for finding features and step
     definitions along a given path on filesystem"""
     def __init__(self, base_dir):
         self.base_dir = FileSystem.abspath(base_dir)
