@@ -201,3 +201,6 @@ class Runner(object):
                 raise SystemExit(2)
 
             return total
+
+class ParallelRunner(Runner):
+    pass

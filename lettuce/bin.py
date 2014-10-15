@@ -90,6 +90,11 @@ def main(args=sys.argv[1:]):
                       action="store_true",
                       help='Launches an interactive debugger upon error')
 
+    parser.add_option("-p", "--parallel",
+                      dest="parallel",
+                      default=False,
+                      help="Run tests in parallel, (default N=number of cores)")
+
     options, args = parser.parse_args(args)
     if args:
         base_path = os.path.abspath(args[0])
@@ -108,7 +113,13 @@ def main(args=sys.argv[1:]):
         # Tags are specified with the '@' prefix, but that isn't used internally
         tags = [tag.lstrip('@') for tag in tags]
 
-    runner = lettuce.Runner(
+    # This is a much DRY-er way to differ runner types
+    if options.parallel:
+        RunnerType = lettuce.ParallelRunner
+    else:
+        RunnerType = lettuce.Runner
+
+    runner = RunnerType(
         base_path,
         scenarios=options.scenarios,
         verbosity=options.verbosity,
