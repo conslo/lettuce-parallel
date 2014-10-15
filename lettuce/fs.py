@@ -256,6 +256,6 @@ class FileSystem(object):
 
                 finally:
                     cls.popd()
-                
+
             return inner
         return decorator
