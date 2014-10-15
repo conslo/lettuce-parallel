@@ -118,6 +118,9 @@ def main(args=sys.argv[1:]):
     )
 
     result = runner.run()
+
+    # No results, OR the number of passed steps doesn't match the number we tried to run.
+    # This catches a few things, the obvious steps failing, or steps not running properly...
     failed = result is None or result.steps != result.steps_passed
     raise SystemExit(int(failed))
 
