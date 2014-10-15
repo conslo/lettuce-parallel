@@ -101,6 +101,7 @@ def main(args=sys.argv[1:]):
 
     tags = None
     if options.tags:
+        # Tags are specified with the '@' prefix, but that isn't used internally
         tags = [tag.strip('@') for tag in options.tags]
 
     runner = lettuce.Runner(
