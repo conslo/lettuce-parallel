@@ -12,3 +12,6 @@ tests/integration/django/dill/garden-db.sqlite
 tests/integration/django/grocery/grocery-db.sqlite
 .tox
 ./_public
+
+# PyCharm
+.idea
