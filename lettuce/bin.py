@@ -114,8 +114,10 @@ def main(args=sys.argv[1:]):
         tags = [tag.lstrip('@') for tag in tags]
 
     # This is a much DRY-er way to differ runner types
+    implementation_options = {}
     if options.parallel:
         RunnerType = lettuce.ParallelRunner
+        implementation_options['parallel'] = options.parallel
     else:
         RunnerType = lettuce.Runner
 
@@ -131,6 +133,7 @@ def main(args=sys.argv[1:]):
         failfast=options.failfast,
         auto_pdb=options.auto_pdb,
         tags=tags,
+        **implementation_options,
     )
 
     result = runner.run()
