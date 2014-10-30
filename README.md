@@ -2,6 +2,7 @@
 Every Spentry fork has two things in common:
  - The parent repository's 'main' branch is left unmodified, and kept up to date)
  - Our 'main' branch is named the same, but prefixed with 'sp-'
+ 
 Beyond this, there are two general types:
  - tmwy (take me with you): These are meant to have their work merged back into the parent repository
  - lma (leave me alone): These are meant to be more intense deviations, and should be considered their own project
