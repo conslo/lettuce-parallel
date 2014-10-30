@@ -10,7 +10,7 @@ Beyond this, there are two general types:
 # lettuce
 > Version 0.2.20 - kryptonite
 
-[![Build Status](https://travis-ci.org/Spentry/lettuce-parallel.svg)](https://travis-ci.org/Spentry/lettuce-parallel)
+[![Build Status](https://travis-ci.org/Spentry/tmwy-lettuce-parallel.svg?branch=sp-master)](https://travis-ci.org/Spentry/tmwy-lettuce-parallel)
 
 ## On release names
 
