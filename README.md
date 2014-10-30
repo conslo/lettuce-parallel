@@ -1,8 +1,7 @@
 # lettuce
 > Version 0.2.20 - kryptonite
 
-[![Build Status](https://secure.travis-ci.org/gabrielfalcao/lettuce.png)](http://travis-ci.org/gabrielfalcao/lettuce)
-[![tip for next commit](http://tip4commit.com/projects/132.svg)](http://tip4commit.com/projects/132)
+[![Build Status](https://travis-ci.org/Spentry/lettuce-parallel.svg)](https://travis-ci.org/Spentry/lettuce-parallel)
 
 ## On release names
 
