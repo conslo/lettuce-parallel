@@ -203,4 +203,17 @@ class Runner(object):
             return total
 
 class ParallelRunner(Runner):
-    pass
+    """ An implementation of the Runner that does stuff in parallel, woo!
+    """
+    def __init__(self, *args, **kwargs):
+        # Error on things that don't work yet
+        if kwargs.pop('auto_pdb', None):
+            # TODO: this could maybe be implemented with qdb: https://github.com/quantopian/qdb
+            raise NotImplementedError("auto_pdb when running in parallel doesn't do what you think it does")
+        if kwargs.pop('failfast', None):
+            # TODO: this is doable with the queue structure being used
+            raise NotImplementedError("failfast has not been implemented in parallel")
+        if kwargs.pop('smtp_queue', None):
+            # TODO: idfk what this even does
+            raise NotImplementedError("smtp_queue has not been implemented in parallel")
+        super(ParallelRunner, self).__init__(self, *args, **kwargs)
