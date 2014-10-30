@@ -5,6 +5,8 @@ Every Spentry fork has two things in common:
  
 Beyond this, there are two general types:
  - tmwy (take me with you): These are meant to have their work merged back into the parent repository
+    - Given the design goal of these forks, isolated forks tend to be kept outside the main branch longer (trying to get merged into the upstream project first)
+    - New work in these should be branched off the upstream 'main' branch when possible (don't stress too much about this)
  - lma (leave me alone): These are meant to be more intense deviations, and should be considered their own project. At the teams discretion these may be renamed to be independent.
 
 # lettuce
