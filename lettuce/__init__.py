@@ -140,17 +140,23 @@ class Runner(object):
 
         self.output = output
 
+    def load_features_files(self):
+        """ Find and return features files
+        """
+        if self.single_feature:
+            return [self.single_feature]
+        else:
+            features_files = self.loader.find_feature_files()
+            if self.random:
+                random.shuffle(features_files)
+            return features_files
+
     def run(self):
         """ Find and load step definitions, and them find and load
         features under `base_path` specified on constructor
         """
         results = []
-        if self.single_feature:
-            features_files = [self.single_feature]
-        else:
-            features_files = self.loader.find_feature_files()
-            if self.random:
-                random.shuffle(features_files)
+        features_files = self.load_features_files()
 
         if not features_files:
             self.output.print_no_features_found(self.loader.base_dir)
