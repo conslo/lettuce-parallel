@@ -217,7 +217,7 @@ class ParallelRunner(Runner):
             # TODO: this could maybe be implemented with qdb: https://github.com/quantopian/qdb
             raise NotImplementedError("auto_pdb when running in parallel doesn't do what you think it does")
         if kwargs.pop('failfast', None):
-            # TODO: this is doable with the queue structure being used
+            # TODO: doable if we wrap the results returned by the threads in objects that contain exception information
             raise NotImplementedError("failfast has not been implemented in parallel")
         if kwargs.pop('smtp_queue', None):
             # TODO: idfk what this even does
