@@ -208,6 +208,20 @@ class Runner(object):
 
             return total
 
+
+
+class ShutdownWork(object):
+    """Exists only to identify an object as a shutdown signal for parallel workers"""
+    pass
+
+
+class TestError(object):
+    """A distinct error object for parallel workers to pass back so (test framework) errors can be printed at the end"""
+    def __init__(self, exception, id):
+        self.exception = exception
+        self.id = id
+
+
 class ParallelRunner(Runner):
     """ An implementation of the Runner that does stuff in parallel, woo!
     """
