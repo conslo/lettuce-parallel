@@ -222,4 +222,6 @@ class ParallelRunner(Runner):
         if kwargs.pop('smtp_queue', None):
             # TODO: idfk what this even does
             raise NotImplementedError("smtp_queue has not been implemented in parallel")
+
+        self.parallel = kwargs.pop('parallel')
         super(ParallelRunner, self).__init__(self, *args, **kwargs)
