@@ -296,8 +296,14 @@ class ParallelRunner(Runner):
         try:
             for filename in features_files:
                 feature = Feature.from_file(filename)
+                args = [self.scenarios]
+                kwargs = {
+                    'tags': self.tags,
+                    'random': self.random,
+                    'failfast': self.failfast,
+                    }
                 # Fire off to worker(s)
-                input_queue.put(feature)
+                input_queue.put((feature, args, kwargs))
         except exceptions.LettuceSyntaxError as e:
             sys.stderr.write(e.msg)
             failed = True
