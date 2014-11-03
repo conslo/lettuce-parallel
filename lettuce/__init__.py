@@ -290,6 +290,7 @@ class ParallelRunner(Runner):
         for i in xrange(self.parallel):
             worker = multiprocessing.Process(target=self.work, args=(i, input_queue, output_queue))
             workers.append(worker)
+            worker.start()
 
         failed = False
         try:
