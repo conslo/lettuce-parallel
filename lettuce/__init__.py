@@ -238,7 +238,7 @@ class ParallelRunner(Runner):
             raise NotImplementedError("smtp_queue has not been implemented in parallel")
 
         self.parallel = kwargs.pop('parallel')
-        super(ParallelRunner, self).__init__(self, *args, **kwargs)
+        super(ParallelRunner, self).__init__(*args, **kwargs)
 
     def work(self, id, input_queue, output_queue):
         """ This is the method that runs in a separate process/thread for processing features
