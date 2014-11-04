@@ -282,7 +282,6 @@ class ParallelRunner(Runner):
 
         call_hook('before', 'all')
 
-        # TODO: Create worker(s)
         import multiprocessing
         input_queue = multiprocessing.JoinableQueue()
         output_queue = multiprocessing.Queue()
