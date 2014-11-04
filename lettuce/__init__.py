@@ -320,6 +320,13 @@ class ParallelRunner(Runner):
             results = []
             # Wait for work to be done
             input_queue.join()
+
+            #cleanup our workers
+            for _ in xrange(len(workers)):
+                input_queue.put(ShutdownWork())
+            for worker in workers:
+                worker.join()
+
             # output_queue should not be added to anymore now, let's empty it.
             while not output_queue.empty():
                 result = output_queue.get()
