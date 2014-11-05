@@ -324,7 +324,7 @@ class ParallelRunner(Runner):
             # Wait for work to be done
             input_queue.join()
 
-            #cleanup our workers
+            # Cleanup our workers
             for worker in workers:
                 worker.join()
 
