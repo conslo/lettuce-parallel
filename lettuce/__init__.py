@@ -316,13 +316,15 @@ class ParallelRunner(Runner):
             failed = True
 
         finally:
+            # Tell our workers to shutdown when they're done.
+            for _ in xrange(len(workers)):
+                input_queue.put(ShutdownWork())
+
             results = []
             # Wait for work to be done
             input_queue.join()
 
             #cleanup our workers
-            for _ in xrange(len(workers)):
-                input_queue.put(ShutdownWork())
             for worker in workers:
                 worker.join()
 
