@@ -252,6 +252,7 @@ class ParallelRunner(Runner):
         while True:
             feature, args, kwargs = input_queue.get()
             if isinstance(feature, ShutdownWork):
+                input_queue.task_done()
                 break
             try:
                 result = feature.run(*args, **kwargs)
