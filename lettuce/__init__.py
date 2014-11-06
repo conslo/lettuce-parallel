@@ -22,6 +22,7 @@ release = 'kryptonite'
 import os
 import sys
 import traceback
+import multiprocessing
 try:
     from imp import reload
 except ImportError:
@@ -283,7 +284,6 @@ class ParallelRunner(Runner):
 
         call_hook('before', 'all')
 
-        import multiprocessing
         input_queue = multiprocessing.JoinableQueue()
         output_queue = multiprocessing.Queue()
         workers = []
