@@ -319,7 +319,7 @@ class ParallelRunner(Runner):
         finally:
             # Tell our workers to shutdown when they're done.
             for _ in xrange(len(workers)):
-                input_queue.put(ShutdownWork())
+                input_queue.put((ShutdownWork(), None, None))
 
             results = []
             # Wait for work to be done
