@@ -18,6 +18,7 @@
 import os
 import sys
 import optparse
+from multiprocessing import cpu_count
 
 import lettuce
 
@@ -116,6 +117,10 @@ def main(args=sys.argv[1:]):
     # This is a much DRY-er way to differ runner types
     implementation_options = {}
     if options.parallel:
+        # Convert to int, default to cpu count
+        options.parallel = int(options.parallel)
+        if not isinstance(options.parallel, int) or options < 1:
+            options.parallel = cpu_count()
         RunnerType = lettuce.ParallelRunner
         implementation_options['parallel'] = options.parallel
     else:
