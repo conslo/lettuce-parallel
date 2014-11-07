@@ -255,7 +255,7 @@ class ParallelRunner(Runner):
         while True:
             feature, args, kwargs = input_queue.get()
             if isinstance(feature, ShutdownWork):
-                call_hook('after', 'batch')
+                call_hook('after', 'batch', id)
                 input_queue.task_done()
                 break
             try:
