@@ -133,7 +133,7 @@ def main(args=sys.argv[1:]):
         failfast=options.failfast,
         auto_pdb=options.auto_pdb,
         tags=tags,
-        **implementation_options,
+        **implementation_options
     )
 
     result = runner.run()
