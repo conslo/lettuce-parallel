@@ -320,13 +320,14 @@ class ParallelRunner(Runner):
             failed = True
 
         finally:
+            # Wait for work to be done, we should do this now because workers may crash before we shut them down
+            input_queue.join()
+
             # Tell our workers to shutdown when they're done.
             for _ in xrange(len(workers)):
                 input_queue.put((ShutdownWork(), None, None))
 
             results = []
-            # Wait for work to be done
-            input_queue.join()
 
             # Cleanup our workers
             for worker in workers:
