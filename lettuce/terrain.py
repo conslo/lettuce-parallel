@@ -50,8 +50,10 @@ class Main(object):
         method.__name__ = method.fn_name = name
         setattr(cls, name, method)
 
+# TODO: this is *totally* opaque and needs some serious comments to explain what's going on
 for name, where, when in (
         ('all', 'all', '%(0)s'),
+        ('batch', 'batch', '%(0)s'),
         ('each_step', 'step', '%(0)s_each'),
         ('step_output', 'step',  '%(0)s_output'),
         ('each_scenario', 'scenario', '%(0)s_each'),
