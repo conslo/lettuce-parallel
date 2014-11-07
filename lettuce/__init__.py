@@ -173,6 +173,8 @@ class Runner(object):
             return
 
         call_hook('before', 'all')
+        # So parallel stuff works in serial
+        call_hook('before', 'batch', 1)
 
         failed = False
         try:
@@ -202,6 +204,8 @@ class Runner(object):
         finally:
             total = TotalResult(results)
             total.output_format()
+            # So parallel stuff works in serial
+            call_hook('after', 'batch')
             call_hook('after', 'all', total)
 
             if failed:
