@@ -264,7 +264,7 @@ class ParallelRunner(Runner):
             feature, args, kwargs = input_queue.get()
             if isinstance(feature, ShutdownWork):
                 try:
-                    call_hook('after', 'batch', id)
+                    call_hook('after', 'batch')
                 except:
                     # We need the worker to continue shutting down
                     traceback.print_exc()
