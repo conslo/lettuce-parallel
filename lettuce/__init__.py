@@ -22,6 +22,7 @@ release = 'kryptonite'
 import os
 import sys
 import traceback
+import multiprocessing
 try:
     from imp import reload
 except ImportError:
@@ -140,17 +141,23 @@ class Runner(object):
 
         self.output = output
 
+    def load_features_files(self):
+        """ Find and return features files
+        """
+        if self.single_feature:
+            return [self.single_feature]
+        else:
+            features_files = self.loader.find_feature_files()
+            if self.random:
+                random.shuffle(features_files)
+            return features_files
+
     def run(self):
         """ Find and load step definitions, and them find and load
         features under `base_path` specified on constructor
         """
         results = []
-        if self.single_feature:
-            features_files = [self.single_feature]
-        else:
-            features_files = self.loader.find_feature_files()
-            if self.random:
-                random.shuffle(features_files)
+        features_files = self.load_features_files()
 
         if not features_files:
             self.output.print_no_features_found(self.loader.base_dir)
@@ -193,6 +200,144 @@ class Runner(object):
             failed = True
 
         finally:
+            total = TotalResult(results)
+            total.output_format()
+            call_hook('after', 'all', total)
+
+            if failed:
+                raise SystemExit(2)
+
+            return total
+
+
+
+class ShutdownWork(object):
+    """Exists only to identify an object as a shutdown signal for parallel workers"""
+    pass
+
+
+class TestError(object):
+    """A distinct error object for parallel workers to pass back so (test framework) errors can be printed at the end"""
+    def __init__(self, exception, id):
+        self.exception = exception
+        self.id = id
+
+
+class ParallelRunner(Runner):
+    """ An implementation of the Runner that does stuff in parallel, woo!
+    """
+    def __init__(self, *args, **kwargs):
+        # Error on things that don't work yet
+        if kwargs.pop('auto_pdb', None):
+            # TODO: this could maybe be implemented with qdb: https://github.com/quantopian/qdb
+            raise NotImplementedError("auto_pdb when running in parallel doesn't do what you think it does")
+        if kwargs.pop('failfast', None):
+            # TODO: doable if we wrap the results returned by the threads in objects that contain exception information
+            raise NotImplementedError("failfast has not been implemented in parallel")
+        if kwargs.pop('smtp_queue', None):
+            # TODO: idfk what this even does
+            raise NotImplementedError("smtp_queue has not been implemented in parallel")
+
+        self.parallel = kwargs.pop('parallel')
+        super(ParallelRunner, self).__init__(*args, **kwargs)
+
+    def work(self, id, input_queue, output_queue):
+        """ This is the method that runs in a separate process/thread for processing features
+
+        :param id: an int, representing a unique (per worker) number to pass to the hooks (so ports etc can work)
+        :param input_queue: a Queue.Queue (or likewise) from which features are accepted (then .task_done() is run after
+        obtaining a result). This may optionally be a 'ShutdownWork' object, to signal the worker to stop.
+        :param output_queue: a Queue.Queue (or likewise) where the results from running the features are put.
+        :return: None, this runs as a separate thread/process.
+        """
+        while True:
+            feature, args, kwargs = input_queue.get()
+            if isinstance(feature, ShutdownWork):
+                input_queue.task_done()
+                break
+            try:
+                result = feature.run(*args, **kwargs)
+            except Exception as e:
+                result = TestError(e, id)
+
+            finally:
+                # It is important that we put the result on the output *before* calling .task_done(), because race
+                # conditions.
+                output_queue.put(result)
+                input_queue.task_done()
+
+    def run(self):
+        features_files = self.load_features_files()
+
+        if not features_files:
+            self.output.print_no_features_found(self.loader.base_dir)
+            return
+
+        # only load steps if we've located some features.
+        # this prevents stupid bugs when loading django modules
+        # that we don't even want to test.
+        try:
+            self.loader.find_and_load_step_definitions()
+        except StepLoadingError, e:
+            print "Error loading step definitions:\n", e
+            return
+
+        call_hook('before', 'all')
+
+        input_queue = multiprocessing.JoinableQueue()
+        output_queue = multiprocessing.Queue()
+        workers = []
+        for i in xrange(self.parallel):
+            worker = multiprocessing.Process(target=self.work, args=(i, input_queue, output_queue))
+            workers.append(worker)
+            worker.start()
+
+        failed = False
+        try:
+            for filename in features_files:
+                feature = Feature.from_file(filename)
+                args = [self.scenarios]
+                kwargs = {
+                    'tags': self.tags,
+                    'random': self.random,
+                    'failfast': self.failfast,
+                    }
+                # Fire off to worker(s)
+                input_queue.put((feature, args, kwargs))
+        except exceptions.LettuceSyntaxError as e:
+            sys.stderr.write(e.msg)
+            failed = True
+        except Exception as e:
+            if not self.failfast:
+                print("Died with {}".format(str(e)))
+                traceback.print_exc()
+            else:
+                raise NotImplementedError("failfast has not been implemented in parallel")
+
+            failed = True
+
+        finally:
+            # Tell our workers to shutdown when they're done.
+            for _ in xrange(len(workers)):
+                input_queue.put((ShutdownWork(), None, None))
+
+            results = []
+            # Wait for work to be done
+            input_queue.join()
+
+            # Cleanup our workers
+            for worker in workers:
+                worker.join()
+
+            # output_queue should not be added to anymore now, let's empty it.
+            while not output_queue.empty():
+                result = output_queue.get()
+                if isinstance(result, TestError):
+                    # Display testing errors
+                    traceback.print_exception(type(result.exception), result.exception, result.exception.traceback)
+                else:
+                    results.append(result)
+
             total = TotalResult(results)
             total.output_format()
             call_hook('after', 'all', total)

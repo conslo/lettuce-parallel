@@ -649,6 +649,7 @@ class Scenario(object):
 
         has_exclusionary_tags = any([t.startswith('-') for t in tags])
 
+        # No tags, and tags are not exclusionary, means run zero tests
         if not self.tags and not has_exclusionary_tags:
             return False
 

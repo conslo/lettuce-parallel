@@ -90,6 +90,11 @@ def main(args=sys.argv[1:]):
                       action="store_true",
                       help='Launches an interactive debugger upon error')
 
+    parser.add_option("-p", "--parallel",
+                      dest="parallel",
+                      default=False,
+                      help="Run tests in parallel, (default N=number of cores)")
+
     options, args = parser.parse_args(args)
     if args:
         base_path = os.path.abspath(args[0])
@@ -101,9 +106,22 @@ def main(args=sys.argv[1:]):
 
     tags = None
     if options.tags:
-        tags = [tag.strip('@') for tag in options.tags]
+        tags = []
+        # I've seen a lot of people try to use the --tag option as comma separated, why not support that too?
+        map(tags.extend, [tag.split(',') for tag in options.tags])
 
-    runner = lettuce.Runner(
+        # Tags are specified with the '@' prefix, but that isn't used internally
+        tags = [tag.lstrip('@') for tag in tags]
+
+    # This is a much DRY-er way to differ runner types
+    implementation_options = {}
+    if options.parallel:
+        RunnerType = lettuce.ParallelRunner
+        implementation_options['parallel'] = options.parallel
+    else:
+        RunnerType = lettuce.Runner
+
+    runner = RunnerType(
         base_path,
         scenarios=options.scenarios,
         verbosity=options.verbosity,
@@ -115,9 +133,13 @@ def main(args=sys.argv[1:]):
         failfast=options.failfast,
         auto_pdb=options.auto_pdb,
         tags=tags,
+        **implementation_options,
     )
 
     result = runner.run()
+
+    # No results, OR the number of passed steps doesn't match the number we tried to run.
+    # This catches a few things, the obvious steps failing, or steps not running properly...
     failed = result is None or result.steps != result.steps_passed
     raise SystemExit(int(failed))
 
