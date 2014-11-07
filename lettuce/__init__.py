@@ -251,11 +251,19 @@ class ParallelRunner(Runner):
         :return: None, this runs as a separate thread/process.
         """
 
-        call_hook('before', 'batch', id)
+        try:
+            call_hook('before', 'batch', id)
+        except:
+            # We need the worker to continue on, so it doesn't hang
+            traceback.print_exc()
         while True:
             feature, args, kwargs = input_queue.get()
             if isinstance(feature, ShutdownWork):
-                call_hook('after', 'batch', id)
+                try:
+                    call_hook('after', 'batch', id)
+                except:
+                    # We need the worker to continue shutting down
+                    traceback.print_exc()
                 input_queue.task_done()
                 break
             try:
