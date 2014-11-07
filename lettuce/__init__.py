@@ -250,9 +250,12 @@ class ParallelRunner(Runner):
         :param output_queue: a Queue.Queue (or likewise) where the results from running the features are put.
         :return: None, this runs as a separate thread/process.
         """
+
+        call_hook('before', 'batch', id)
         while True:
             feature, args, kwargs = input_queue.get()
             if isinstance(feature, ShutdownWork):
+                call_hook('after', 'batch')
                 input_queue.task_done()
                 break
             try:
