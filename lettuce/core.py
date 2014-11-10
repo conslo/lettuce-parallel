@@ -1203,6 +1203,9 @@ class Feature(object):
             if all(map(lambda x: isinstance(x, int), scenarios)):
                 scenario_nums_to_run = scenarios
 
+        # TODO[TJ]: I really feel like this should be a method on scenario.
+        # This will also allow us to create a method on the scenario to
+        # aggregate, and possibly use this further up in the code.
         def should_run_scenario(num, scenario):
             return scenario.matches_tags(tags) and \
                    (scenario_nums_to_run is None or num in scenario_nums_to_run)
