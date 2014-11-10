@@ -358,6 +358,12 @@ class ParallelRunner(Runner):
                 else:
                     results.append(result)
 
+            # We can't terminate/join the workers before emptying the queue, because the background thread that manages the queue in each worker will still be running.
+            # TODO[TJ]: Figure out why we can't just .join(), might be an implimentation issue but still.
+            for worker in workers:
+                worker.terminate()
+                worker.join()
+
             total = TotalResult(results)
             total.output_format()
             call_hook('after', 'all', total)
