@@ -280,6 +280,10 @@ class ParallelRunner(Runner):
                 # conditions.
                 output_queue.put(result)
                 input_queue.task_done()
+        # This is more preventative than anything else, to prevent GC issues
+        input_queue.close()
+        output_queue.close()
+
 
     def run(self):
         features_files = self.load_features_files()
