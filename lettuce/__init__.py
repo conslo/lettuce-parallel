@@ -288,6 +288,9 @@ class ParallelRunner(Runner):
             self.output.print_no_features_found(self.loader.base_dir)
             return
 
+        # limit the number of workers to the number of feature files, because that's how we divide work
+        self.parallel = min(self.parallel, len(features_files))
+
         # only load steps if we've located some features.
         # this prevents stupid bugs when loading django modules
         # that we don't even want to test.
