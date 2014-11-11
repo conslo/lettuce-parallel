@@ -173,6 +173,8 @@ class Runner(object):
             return
 
         call_hook('before', 'all')
+        # So parallel stuff works in serial
+        call_hook('before', 'batch', 1)
 
         failed = False
         try:
@@ -202,6 +204,8 @@ class Runner(object):
         finally:
             total = TotalResult(results)
             total.output_format()
+            # So parallel stuff works in serial
+            call_hook('after', 'batch')
             call_hook('after', 'all', total)
 
             if failed:
@@ -250,9 +254,20 @@ class ParallelRunner(Runner):
         :param output_queue: a Queue.Queue (or likewise) where the results from running the features are put.
         :return: None, this runs as a separate thread/process.
         """
+
+        try:
+            call_hook('before', 'batch', id)
+        except:
+            # We need the worker to continue on, so it doesn't hang
+            pass
         while True:
             feature, args, kwargs = input_queue.get()
             if isinstance(feature, ShutdownWork):
+                try:
+                    call_hook('after', 'batch')
+                except:
+                    # We need the worker to continue shutting down
+                    pass
                 input_queue.task_done()
                 break
             try:
@@ -265,6 +280,10 @@ class ParallelRunner(Runner):
                 # conditions.
                 output_queue.put(result)
                 input_queue.task_done()
+        # This is more preventative than anything else, to prevent GC issues
+        input_queue.close()
+        output_queue.close()
+
 
     def run(self):
         features_files = self.load_features_files()
@@ -272,6 +291,9 @@ class ParallelRunner(Runner):
         if not features_files:
             self.output.print_no_features_found(self.loader.base_dir)
             return
+
+        # limit the number of workers to the number of feature files, because that's how we divide work
+        self.parallel = min(self.parallel, len(features_files))
 
         # only load steps if we've located some features.
         # this prevents stupid bugs when loading django modules
@@ -317,17 +339,15 @@ class ParallelRunner(Runner):
             failed = True
 
         finally:
+
             # Tell our workers to shutdown when they're done.
             for _ in xrange(len(workers)):
                 input_queue.put((ShutdownWork(), None, None))
 
             results = []
-            # Wait for work to be done
-            input_queue.join()
 
-            # Cleanup our workers
-            for worker in workers:
-                worker.join()
+            # Wait for workers to shut down
+            input_queue.join()
 
             # output_queue should not be added to anymore now, let's empty it.
             while not output_queue.empty():
@@ -337,6 +357,12 @@ class ParallelRunner(Runner):
                     traceback.print_exception(type(result.exception), result.exception, result.exception.traceback)
                 else:
                     results.append(result)
+
+            # We can't terminate/join the workers before emptying the queue, because the background thread that manages the queue in each worker will still be running.
+            # TODO[TJ]: Figure out why we can't just .join(), might be an implimentation issue but still.
+            for worker in workers:
+                worker.terminate()
+                worker.join()
 
             total = TotalResult(results)
             total.output_format()
