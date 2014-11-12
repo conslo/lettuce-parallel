@@ -359,7 +359,7 @@ class ParallelRunner(Runner):
                     results.append(result)
 
             # We can't terminate/join the workers before emptying the queue, because the background thread that manages the queue in each worker will still be running.
-            # TODO[TJ]: Figure out why we can't just .join(), might be an implimentation issue but still.
+            # TODO[TJ]: Figure out why we can't just .join(), might be an implementation issue, but still.
             for worker in workers:
                 worker.terminate()
                 worker.join()
