@@ -117,8 +117,9 @@ def main(args=sys.argv[1:]):
     # This is a much DRY-er way to differ runner types
     implementation_options = {}
     if options.parallel:
-        # Convert to int, default to cpu count
+        # Convert to int
         options.parallel = int(options.parallel)
+        # Default to cpu count
         if not isinstance(options.parallel, int) or options.parallel < 2:
             options.parallel = cpu_count()
         RunnerType = lettuce.ParallelRunner
