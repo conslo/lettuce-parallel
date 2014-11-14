@@ -350,7 +350,7 @@ class ParallelRunner(Runner):
             input_queue.join()
 
             # output_queue should not be added to anymore now, let's empty it.
-            while not output_queue.empty():
+            for _ in xrange(len(features_files)):
                 result = output_queue.get()
                 if isinstance(result, TestError):
                     # Display testing errors
