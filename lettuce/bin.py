@@ -120,7 +120,7 @@ def main(args=sys.argv[1:]):
         # Convert to int
         options.parallel = int(options.parallel)
         # Default to cpu count
-        if not isinstance(options.parallel, int) or options.parallel < 2:
+        if not isinstance(options.parallel, int) or options.parallel < 1:
             options.parallel = cpu_count()
         RunnerType = lettuce.ParallelRunner
         implementation_options['parallel'] = options.parallel
