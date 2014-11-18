@@ -222,8 +222,8 @@ class ShutdownWork(object):
 
 class TestError(object):
     """A distinct error object for parallel workers to pass back so (test framework) errors can be printed at the end"""
-    def __init__(self, exception, id):
-        self.exception = exception
+    def __init__(self,exc_info, id):
+        self.type, self.exception, self.traceback = exc_info
         self.id = id
 
 
@@ -272,8 +272,12 @@ class ParallelRunner(Runner):
                 break
             try:
                 result = feature.run(*args, **kwargs)
-            except Exception as e:
-                result = TestError(e, id)
+            except Exception:
+                exc_info = sys.exc_info()
+                result = TestError(exc_info, id)
+                # We need this to avoid GC issues: https://docs.python.org/2/library/sys.html#sys.exc_info
+                del exc_info
+                # `result` gets overwritten each loop anyway
 
             finally:
                 # It is important that we put the result on the output *before* calling .task_done(), because race
@@ -354,7 +358,7 @@ class ParallelRunner(Runner):
                 result = output_queue.get()
                 if isinstance(result, TestError):
                     # Display testing errors
-                    traceback.print_exception(type(result.exception), result.exception, result.exception.traceback)
+                    traceback.print_exception(result.type, result.exception, result.traceback)
                 else:
                     results.append(result)
 
